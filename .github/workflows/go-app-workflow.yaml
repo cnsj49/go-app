@@ -17,13 +17,13 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Build Docker Image
-        run: docker build -t chanuts/devops-assignment:{{ env.IMAGE_TAG }} .
+        run: docker build -t ${{ env.DOCKERHUB_NAME }}:${{ env.IMAGE_TAG }} .
 
       - name: Login to Docker Hub
         run: docker login -u ${{ secrets.DOCKER_USERNAME }} -p ${{ secrets.DOCKER_PASSWORD }}
 
       - name: Push Docker Image to Docker Hub
-        run: docker push {{ env.DOCKERHUB_NAME }}:{{ env.IMAGE_TAG }}
+        run: docker push ${{ env.DOCKERHUB_NAME }}:${{ env.IMAGE_TAG }}
 
   deploy:
     needs: build_and_push
