@@ -1,0 +1,42 @@
+replicaCount: 1
+tier: application
+tag: 1.0.0
+apps:
+  Env: develop
+
+image:
+  repository: chanuts/devops-assignment
+  tag: v1.0.0
+  pullPolicy: Always
+
+service:
+  type: NodePort
+  port: 8080
+
+ingress:
+  enabled: false
+  annotations: 
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+  hosts:
+    host: go-app.example.local
+    paths: /
+
+hpa:
+  minreplicas: 1
+  maxreplicas: 4
+  targetcpu: 75
+
+resources:
+  requests:
+    cpu: 0.5
+    memory: 200M
+  limits:
+    cpu: 1
+    memory: 1G
+
+iam:
+  roleARN: "arn:aws:iam::123456789012:role/eks-service-role"
+  serviceAccountName: "eks-app-service-account"
+
+extraManifests:
+  - service-account.yaml

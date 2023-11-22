@@ -1,0 +1,4 @@
+apiVersion: v1
+name: go-app
+description: Go application for DevOps assignment
+version: 1.0.0

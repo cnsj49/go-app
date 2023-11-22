@@ -1,0 +1,63 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: {{ .Release.Name }}
+    module: {{ .Values.tier }}
+    env: {{ .Values.apps.Env }}
+  name: {{ .Release.Name }}
+  namespace: {{ .Release.Namespace }}
+spec:
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      module: {{ .Values.tier }}
+      env: {{ .Values.apps.Env }}
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 50%
+      maxUnavailable: 50%
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        module: {{ .Values.tier }}
+        env: {{ .Values.apps.Env }}
+    spec:
+      automountServiceAccountToken: false
+      containers:
+        -
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          name: {{ .Release.Name }}
+          securityContext:
+            readOnlyRootFilesystem: true
+            runAsNonRoot: true
+            runAsUser: 15555
+            runAsGroup: 15555
+            privileged: false
+            allowPrivilegeEscalation: false
+          ports:
+            - containerPort: {{ .Values.service.port }}
+          resources:
+            limits:
+              cpu: {{ .Values.resources.limits.cpu }}
+              memory: {{ .Values.resources.limits.memory }}
+            requests:
+              cpu: {{ .Values.resources.requests.cpu }}
+              memory: {{ .Values.resources.requests.memory }}
+          env:
+            - name: TZ
+              value: "Asia/Bangkok"
+            - name: AWS_ROLE_ARN
+              value: {{ .Values.iam.roleARN }}
+          readinessProbe:
+            httpGet:
+              path: /readiness
+              port: {{ .Values.service.port }}
+            initialDelaySeconds: 3
+            periodSeconds: 5
+            failureThreshold: 3
+      restartPolicy: Always
